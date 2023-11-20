@@ -1,4 +1,3 @@
-
 const path = require('path');
 const vscode = require('vscode');
 
@@ -9,19 +8,28 @@ function processDocument() {
         const document = editor.document;
         const text = document.getText();
 
-        // Expresión regular para encontrar <a> con target="_blank" y atributo name=""
+        // Regex to find <a> tags with target="_blank" and atributo name=""
         const regex = /<a([^>]*)target="_blank"([^>]*)name="([^"]*)"([^>]*)>/g;
 
-        // Obtiene el nombre del documento sin la extensión
+        // Get the file name without the file extention
         const fileName = path.basename(document.fileName, path.extname(document.fileName));
 
-        // Reemplaza <a> con target="_blank" con la nueva línea de código
+        // Seach and validate the "name" attribute
         const newText = text.replace(regex, (match, p1, p2, p3, p4) => {
-            const alias = `alias="${p3}-${fileName}"`;
-            return `<a${p1}target="_blank"${p2}${alias}${p4} conversion="true">`;
+            // Validates whenter the "name" atribute is empty
+            if (!p3.trim()) {
+                const range = document.getText().indexOf(match);
+                const position = document.positionAt(range);
+                const errorMessage = `El atributo "name" no puede estar vacío. Por favor, llénelo. (Línea: ${position.line + 1}, Columna: ${position.character + 1})`;
+                vscode.window.showWarningMessage(errorMessage);
+                return match;
+            } else {
+                const alias = `alias="${p3}-${fileName}"`;
+                return `<a${p1}target="_blank"${p2}${alias}${p4} conversion="true">`;
+            }
         });
 
-        // Reemplaza el contenido del documento con el nuevo texto solo si hay cambios
+        // Replaces the document content with the new text only if there are changes.
         if (newText !== text) {
             editor.edit((editBuilder) => {
                 const fullRange = new vscode.Range(
@@ -40,13 +48,11 @@ function processDocument() {
 
 function activate(context) {
     let disposable = vscode.commands.registerCommand('extension.automate-tracking-link', processDocument);
-
     context.subscriptions.push(disposable);
 }
 
 
 function deactivate() { }
-
 module.exports = {
     activate,
     deactivate
