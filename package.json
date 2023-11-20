@@ -3,6 +3,8 @@
   "displayName": "automate-tracking-link",
   "description": "Tool to automatically add tracking attributes to links (\"<a>\" tags) within html documents.",
   "version": "0.0.1",
+  "publisher": "David-Monsalvo",
+  "repository": "https://github.com/David-Monsalvo/automate-tracking-link",
   "engines": {
     "vscode": "^1.84.0"
   },
